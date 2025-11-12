@@ -1,97 +1,110 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# 藍牙裝置偵測 App
 
-# Getting Started
+一個使用 React Native 開發的 Android 應用程式，透過藍牙掃描偵測附近的藍牙裝置數量，並根據 RSSI 值分類為近、中、遠距離，同時以圖表呈現數據變化趨勢。
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## 功能特色
 
-## Step 1: Start Metro
+- 🔍 **藍牙掃描**：每 5 秒自動掃描附近的藍牙裝置
+- 📊 **RSSI 分類**：根據訊號強度將裝置分類為：
+  - 近距離：RSSI > -75 dBm
+  - 中距離：-75 dBm ≤ RSSI ≤ -85 dBm
+  - 遠距離：-85 dBm < RSSI ≤ -100 dBm
+- 📈 **趨勢圖表**：顯示過去 5 分鐘的裝置數量變化趨勢
+- 💾 **即時統計**：即時顯示各距離範圍的裝置數量
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## 技術架構
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+- **框架**：React Native CLI 0.82.1
+- **語言**：TypeScript
+- **藍牙庫**：react-native-ble-manager
+- **圖表庫**：react-native-chart-kit
+- **權限管理**：react-native-permissions
 
-```sh
-# Using npm
-npm start
+## 專案結構
 
-# OR using Yarn
-yarn start
+```
+MobileCrowdTracker/
+├── src/
+│   ├── components/
+│   │   ├── BluetoothScanner.tsx    # 藍牙掃描核心邏輯
+│   │   ├── DeviceCounter.tsx        # 裝置計數器組件
+│   │   └── ChartView.tsx            # 圖表顯示組件
+│   ├── utils/
+│   │   ├── rssiClassifier.ts       # RSSI 分類工具
+│   │   ├── dataManager.ts          # 歷史數據管理
+│   │   └── permissions.ts          # 權限處理
+│   └── App.tsx                      # 主應用程式
+├── android/                         # Android 原生專案
+└── package.json
 ```
 
-## Step 2: Build and run your app
+## 安裝與運行
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+### 前置需求
 
-### Android
+- Node.js >= 20
+- React Native 開發環境
+- Android Studio 和 Android SDK
+- Android 實體裝置或模擬器（需要支援藍牙）
 
-```sh
-# Using npm
+### 安裝步驟
+
+1. 安裝依賴套件：
+```bash
+npm install
+```
+
+2. 連結原生模組（React Native 0.82+ 自動連結）：
+```bash
+cd android && ./gradlew clean && cd ..
+```
+
+3. 運行應用程式：
+```bash
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
+## 權限說明
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+應用程式需要以下權限：
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+- **BLUETOOTH**：掃描藍牙裝置
+- **BLUETOOTH_ADMIN**：管理藍牙連接
+- **ACCESS_FINE_LOCATION**：Android 6.0+ 要求（藍牙掃描需要位置權限）
+- **BLUETOOTH_SCAN**：Android 12+ 要求
+- **BLUETOOTH_CONNECT**：Android 12+ 要求
 
-```sh
-bundle install
-```
+首次運行時，應用程式會自動請求必要權限。
 
-Then, and every time you update your native dependencies, run:
+## 使用說明
 
-```sh
-bundle exec pod install
-```
+1. **啟動掃描**：點擊「開始掃描」按鈕開始偵測附近的藍牙裝置
+2. **查看統計**：頂部顯示當前近/中/遠距離的裝置數量
+3. **查看趨勢**：中間的圖表顯示過去 5 分鐘的數據變化
+4. **停止掃描**：點擊「停止掃描」按鈕停止偵測
+5. **清除數據**：點擊「清除數據」按鈕清除所有歷史數據
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+## 注意事項
 
-```sh
-# Using npm
-npm run ios
+- 藍牙掃描會消耗電量，建議適度使用
+- 確保裝置的藍牙功能已開啟
+- Android 6.0+ 需要授予位置權限才能進行藍牙掃描
+- 數據僅儲存在記憶體中，關閉應用程式後會清除
 
-# OR using Yarn
-yarn ios
-```
+## 開發說明
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+### 修改掃描間隔
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+在 `src/components/BluetoothScanner.tsx` 中修改：
+- `scanInterval`：掃描間隔（預設 5000 毫秒）
+- `scanDuration`：每次掃描持續時間（預設 3000 毫秒）
 
-## Step 3: Modify your app
+### 修改數據保留時間
 
-Now that you have successfully run the app, let's make changes!
+在 `src/utils/dataManager.ts` 中修改：
+- `maxDataPoints`：最大數據點數量
+- `maxAge`：數據最大保留時間（毫秒）
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## 授權
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+此專案僅供學習和開發使用。
